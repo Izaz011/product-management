@@ -39,6 +39,7 @@ router.delete("/users/:userId/cart",authentication,authorization,cartController.
 
 router.all("/*", async function (req, res) {
     return res.status(400).send({ status: false, message: "Bad reqeust / invalid Path" });
+    
   });
 
 
