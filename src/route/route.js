@@ -5,8 +5,7 @@ const productController=require("../controller/productController")
 const cartController=require("../controller/cartController")
 const orderController=require("../controller/orderController")
 const {authentication,authorization}=require("../middleware/auth")
-const aws= require("aws-sdk");
-const { APIGateway } = require('aws-sdk');
+
 // .................................................. Users Api ....................................................................
  router.post('/register', usercontroller.registerUser)
  router.post('/login', usercontroller.logIn)
@@ -16,8 +15,7 @@ const { APIGateway } = require('aws-sdk');
 
 //  ..............................................Product API.........................................................
 router.post("/products",productController.createProduct)
-
-router.get("/products",productController.getAllProducts)//v
+router.get("/products",productController.getAllProducts)
 router.get("/products/:productId",productController.getDetailsFromParam)
 router.put("/products/:productId",productController.updateProduct)
 router.delete("/products/:productId",productController.deleteById)

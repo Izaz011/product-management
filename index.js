@@ -4,8 +4,6 @@ const route = require("./src/route/route");
 const app = express()
 
 mongoose.set("strictQuery",true)
-
-
 const multer= require("multer");
 
 app.use( multer().any())

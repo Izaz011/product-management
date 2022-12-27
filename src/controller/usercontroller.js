@@ -1,5 +1,4 @@
 const { isValidName, forName, isValidEmail, isValidNumber, isValidPassword, isValidObjectId, isValidPincode } = require('../validator/validation.js')
-const { sign } = require("jsonwebtoken")
 const userModel = require('../models/usermodel.js')
 const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
@@ -48,7 +47,7 @@ const registerUser = async function (req, res) {
             req.body.profileImage = uploadedFileURL
         }
         else {
-            return res.status(400).send({ msg: "profile image is mandatory" })
+            return res.status(400).send({ message: "profile image is mandatory" })
         }
 
 
@@ -74,10 +73,10 @@ const registerUser = async function (req, res) {
         req.body.address = JSON.parse(req.body.address)
 
         if(!req.body.address.shipping){
-            return res.status(400).send({status:false,msg:"shipping field is mandatory"})
+            return res.status(400).send({status:false,message:"shipping field is mandatory"})
         }
         if(!req.body.address.billing){
-            return res.status(400).send({status:false,msg:"billing field is mandatory"})
+            return res.status(400).send({status:false,message:"billing field is mandatory"})
         }
 
         if (!req.body.address.shipping.street) { return res.status(400).send({ status: false, message: "street is mandatory" }) }
@@ -149,35 +148,35 @@ const logIn = async function (req, res) {
         if (Object.keys(data).length == 0) { return res.status(400).send({ status: false, message: "body is required" }) }
 
         if (!email) {
-            return res.status(400).send({ status: false, msg: "please provide email" })
+            return res.status(400).send({ status: false, message: "please provide email" })
         }
 
         if (!isValidEmail(email)) {
-            return res.status(400).send({ status: false, msg: "please provide valid email" })
+            return res.status(400).send({ status: false, message: "please provide valid email" })
         }
 
         if (!password) {
-            return res.status(400).send({ status: false, msg: "please provide password" })
+            return res.status(400).send({ status: false, message: "please provide password" })
         }
 
         if (!isValidPassword(password)) {
-            return res.status(400).send({ status: false, msg: "please provide valid password" })
+            return res.status(400).send({ status: false, message: "please provide valid password" })
         }
 
         const user = await userModel.findOne({ email: email }).select({ password: 1 })
 
         if (!user) {
-            return res.status(404).send({ status: false, msg: "no user found" })
+            return res.status(404).send({ status: false, message: "no user found" })
         }
 
         const matchedPassword = await bcrypt.compare(password, user.password)
 
         if (!matchedPassword) {
-            return res.status(400).send({ status: false, msg: "user is not valid" })
+            return res.status(400).send({ status: false, message: "user is not valid" })
         }
 
         const userId = user._id.toString()
-        const token = sign(
+        const token = jwt.sign(
             {
                 userId: userId
             }, "productManagementKey",
@@ -186,10 +185,10 @@ const logIn = async function (req, res) {
             }
         )
 
-        return res.status(200).send({ status: true, msg: "user log in successfully", data: { userId: userId, token: token } })
+        return res.status(200).send({ status: true, message: "user log in successfully", data: { userId: userId, token: token } })
     }
     catch (error) {
-        return res.status(500).send({ status: false, msg: error.message })
+        return res.status(500).send({ status: false, message: error.message })
     }
 }
 //............................................................ GET API ..............................................................................
@@ -230,6 +229,7 @@ const getUserParam = async function (req, res) {
         return res.status(500).send({ status: false, error: err.message })
     }
 }
+//............................................................. UPDATE API .............................................................................
 
 const updateUser = async function (req, res) {
     try {

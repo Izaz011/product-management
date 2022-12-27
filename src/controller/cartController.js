@@ -3,6 +3,8 @@ const productModel = require("../models/productModel");
 const usermodel = require("../models/usermodel");
 const { isValidObjectId } = require("../validator/validation");
 
+//............................................................. POST API .............................................................................
+
 const createCart = async function (req, res) {
   try {
       if (Object.keys(req.body).length == 0) {
@@ -47,7 +49,7 @@ const createCart = async function (req, res) {
       }
       let findProduct= await productModel.findOne({_id:productId, isDeleted:false})
       if(!findProduct){
-          return res.status(404).send({status:false, message: "this product does not exist."})
+          return res.status(404).send({status:false, message: "this product does not exist ."})
       }
       
       let carted= await cartModel.findOne({userId:userId})
@@ -81,7 +83,7 @@ const createCart = async function (req, res) {
           quantity:quantity
       }
       totalPrice= carted.totalPrice+(findProduct.price)*quantity
-      totalItems= carted.totalItems+quantity
+      totalItems= carted.totalItems+1
       let updatedCart= await cartModel.findOneAndUpdate({_id:carted._id},{$push:{items:obj},totalPrice:totalPrice, totalItems:totalItems},{new:true})
       return res.status(200).send({status:true, message:"Success", data:updatedCart})
       }
@@ -93,69 +95,71 @@ const createCart = async function (req, res) {
           quantity:quantity
       }],
       totalPrice:findProduct.price*quantity,
-      totalItems: quantity
+      totalItems: 1
       }
       
       let newcart= await cartModel.create(store)
-      return res.status(201).send({status:false, message:"Success", data:newcart})
+      return res.status(201).send({status:true, message:"Success", data:newcart})
       }}
   catch (err) {
       res.status(500).send({ status: false, message: err.message })
   }
 }
 
+//............................................................. UPDATE API .............................................................................
 
 
 const updateCart=async function(req,res){
+  try{
    const data=req.body
    const {cartId,productId,removeProduct}=data 
    const userId=req.params.userId
 
    if(Object.keys(data).length==0){
-    return res.status(400).send({status:false,msg:" body is empty,please provide valid body"})
+    return res.status(400).send({status:false,message:" body is empty,please provide valid body"})
    }
 
    if(!cartId){
-    return res.status(400).send({status:false,msg:"please provide cart ID"})
+    return res.status(400).send({status:false,message:"please provide cart ID"})
    }
 
    if(!isValidObjectId(cartId)){
-    return res.status(400).send({status:false,msg:"please provide valid cart ID"})
+    return res.status(400).send({status:false,message:"please provide valid cart ID"})
    }
 
    const cart=await cartModel.findById(cartId)
 
    if(!cart){
-    return res.status(404).send({status:false,msg:"cart does not exist"})
+    return res.status(404).send({status:false,message:"cart does not exist"})
    }
    if(cart.userId.toString()!==userId){
-    return res.status(400).send({status:false,msg:"user invalid"})
+    return res.status(400).send({status:false,message:"user invalid"})
    }
 
    if(!productId){
-    return res.status(400).send({status:false,msg:"please provide product ID"})
+    return res.status(400).send({status:false,message:"please provide product ID"})
    }
 
    if(!isValidObjectId(productId)){
-    return res.status(400).send({status:false,msg:"please provide valid product ID"})
+    return res.status(400).send({status:false,message:"please provide valid product ID"})
    }
 
    const product=await productModel.findOne({_id:productId,isDeleted:false})
 
    if(!product){
-    return res.status(404).send({status:false,msg:"product does not exist"})
+    return res.status(404).send({status:false,message:"product does not exist"})
    }
    if(!removeProduct && removeProduct!==0){
-    return res.status(400).send({status:false,msg:"please provide remove product"})
+    return res.status(400).send({status:false,message:"please provide remove product"})
    }
 
   if(!([1,0]).includes(removeProduct)){
-    return res.status(400).send({status:false,msg:"please provide valid remove product"})
+    return res.status(400).send({status:false,message:"please provide valid remove product"})
   }
 
   if(removeProduct==1){
     if(cart.items.length==0){
-      return res.status(404).send({status:false,msg:"you can not update an empty cart"}) 
+      return res.status(404).send({status:false,message:"you can not update an empty cart"}) 
     }
     for(let i=0;i<cart.items.length;i++){
       if(cart.items[i].productId==productId){
@@ -165,7 +169,7 @@ const updateCart=async function(req,res){
            {$pull:{"items":{productId:productId}},$inc:{totalPrice:-product.price,totalItems:-1}},
             {new:true}
         )
-      return res.status(200).send({status:true,msg:"updated successfully",data:updatedCart})
+      return res.status(200).send({status:true,message:"updated Successfully",data:updatedCart})
       }
       else if(cart.items[i].quantity>1){
         const updatedCart=await cartModel.findOneAndUpdate(
@@ -173,18 +177,18 @@ const updateCart=async function(req,res){
           {$inc:{"items.$.quantity":-1,totalPrice:-product.price}},
           {new:true}
         )
-        return res.status(200).send({status:true,msg:"updated successfully",data:updatedCart})
+        return res.status(200).send({status:true,message:"updated Successfully",data:updatedCart})
        }
     }
     else if(i==cart.items.length-1){
-      return res.status(404).send({status:false,msg:"this product does not exist in this cart"})
+      return res.status(404).send({status:false,message:"this product does not exist in this cart"})
     }
   }
     }
 
   if(removeProduct==0){
     if(cart.items.length==0){
-      return res.status(404).send({status:false,msg:"you can not update an empty cart"}) 
+      return res.status(404).send({status:false,message:"you can not update an empty cart"}) 
     }
     for(let i=0;i<cart.items.length;i++)
     if(cart.items[i].productId==productId){
@@ -193,13 +197,19 @@ const updateCart=async function(req,res){
          {$pull:{"items":{productId:productId}},$inc:{totalPrice:(-cart.items[i].quantity)*(product.price),totalItems:-1}},
           {new:true}
           )
-          return res.status(200).send({status:true,msg:"updated successfully",data:updatedCart})
+          return res.status(200).send({status:true,message:"updated Successfully",data:updatedCart})
     }
     else if(i==cart.items.length-1){
-      return res.status(404).send({status:false,msg:"this product does not exist in this cart"})
+      return res.status(404).send({status:false,message:"this product does not exist in this cart"})
     }
-  }
-}
+  }}
+ catch(err){
+return res.status(500).send({status:false, message:err.message})
+}}
+
+
+//............................................................. GET API .............................................................................
+
 
 const getCartDetails = async function (req, res) {
   try {
@@ -211,9 +221,12 @@ const getCartDetails = async function (req, res) {
 
       res.status(200).send({ status: true, message: "Success", data: findCart });
   } catch (err) {
-      res.status(500).send({ status: false, error: err.message});
+      res.status(500).send({ status: false, message: err.message});
     }
 };
+
+
+//............................................................. DELETE API .............................................................................
 
 const deleteCart = async function(req,res){
   try{
@@ -221,12 +234,12 @@ const deleteCart = async function(req,res){
     
       const cardExist = await cartModel.findOneAndUpdate({userId:userId},{$set:{totalItems:0,totalPrice:0,items:[],deletedAt:new Date()}});
       console.log(cardExist)
-      if(cardExist)return res.status(204).send({status:true,msg:"success",data:cardExist})
+      if(cardExist)return res.status(204).send({status:true,message:"Success",data:cardExist})
       else{ return res.status(404).send({status:true,message:"not found"})}
 
   }catch(err){
-      return res.status(500).send({ status: false, error: err.message })
+      return res.status(500).send({ status: false, message: err.message })
     }
 }
 
-module.exports={createCart,updateCart,getCartDetails, deleteCart}
+module.exports= {createCart,updateCart,getCartDetails, deleteCart}
