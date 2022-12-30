@@ -106,10 +106,8 @@ const createProduct = async function (req, res) {
 
 
         if (availableSizes) {
-            data.availableSizes = JSON.parse(availableSizes)
-            if (!Array.isArray(data.availableSizes) || data.availableSizes.length == 0) {
-                return res.status(400).send({ status: false, message: "please provide valid sizes" })
-            }
+            data.availableSizes =availableSizes.toUpperCase().split(",")
+    
             const arrayEnum = ["S", "XS", "M", "X", "L", "XXL", "XL"]
 
             for (let i = 0; i < data.availableSizes.length; i++) {
@@ -290,10 +288,8 @@ const updateProduct = async function(req,res){
         }
   
         if (availableSizes) {
-            data.availableSizes = JSON.parse(availableSizes)
-            if (!Array.isArray(data.availableSizes) || data.availableSizes.length == 0) {
-                return res.status(400).send({ status: false, message: "please provide valid sizes" })
-            }
+            data.availableSizes = availableSizes.toUpperCase().split(",")
+
             const arrayEnum = ["S", "XS", "M", "X", "L", "XXL", "XL"]
 
             for (let i = 0; i < data.availableSizes.length; i++) {
@@ -302,7 +298,7 @@ const updateProduct = async function(req,res){
                 }
             }
 
-            update.availableSizes=availableSizes
+            update.availableSizes=data.availableSizes
         }
         if(installments){
             if(isNaN(installments)){return res.status(400).send({status:false,message:"inValid installments"})}
